@@ -1,0 +1,319 @@
+import pyttsx3 # pip install pyttsx3  
+import datetime
+import speech_recognition as sr #pip install SpeechRecognition
+import smtplib
+import webbrowser as wb
+import os
+import time
+import pyjokes
+import json
+
+# Initialize the engine 
+pathc = "C:\\"
+pathd="D:\\"
+list_of_monts=[ "january","february","march ","april","may","june","july","august","september","october","november","december"]
+engine =pyttsx3.init()
+#change volume
+#volume =engine.getProperty("volume")
+#print("volume is {0}".format(volume))
+engine.setProperty("volume",1.0)
+#setting speed rate
+engine.setProperty("rate",160)
+
+
+
+
+
+def speak(audio):
+    engine.say(audio)
+    engine.runAndWait()
+
+def Time():
+    #gives  currect time 
+    timef = datetime.datetime.now().strftime("%I:%M:%S")
+    speak("the current time now is")
+    engine.setProperty("rate",140)
+    speak(timef)
+    engine.setProperty("rate",150)
+
+
+def numbers_ending(num):
+    if num > 10:
+        num=num%10
+    if num==1:
+        return "st"
+    if num ==2:
+        return  "nd"
+    if num == 3:
+         return "rd"
+    else :
+         return "th"
+
+
+
+
+def date():
+    year=int(datetime.datetime.now().year)
+    month=int(datetime.datetime.now().month)
+    date=int(datetime.datetime.now().day)
+    dayn=str(date)+numbers_ending(date)
+    speak("the current date is")
+    speak("the "+dayn)
+    speak("of "+list_of_monts[month-1])
+    speak(year)
+    engine.setProperty("rate",150)
+
+def TimeOfDay():
+    hour=datetime.datetime.now().hour
+    if hour >=6 and hour < 12:
+        return "morning"
+    elif hour >=12 and hour < 18:
+        return "afternoon"
+    elif hour >=18  and hour < 22:
+        return "Evening"
+    else:
+        return "night"
+
+
+def wishme():
+
+    TimeNow=TimeOfDay()
+    speak("wellcome back Sir")
+    speak("Good"+TimeNow)
+    Time()
+    date()
+    speak("please let me know if i can assist you")
+
+
+
+
+def takeCommand():
+    r= sr.Recognizer()
+    with sr.Microphone() as source:
+      print("Listening...")
+      r.pause_threshold = 1
+      audio = r.listen(source)
+
+    try:
+        print("Recognizning...")
+        query = r.recognize_google(audio, language='en-in')
+        print(query)
+
+    except Exception as e:
+        print("Exeption" + e.__str__)
+        return "None"
+    return query
+
+def HIT():
+    speak('starting H I T website')
+    operapath ='C:/Users/sergi/AppData/Local/Programs/Opera GX/launcher.exe %s'
+    wb.get(operapath).open_new_tab('https://md.hit.ac.il')
+
+
+def OpenSpotify():
+    speak("starting spotify")
+    os.startfile('C:/Users/sergi/AppData/Roaming/Spotify/Spotify.exe')
+
+def CloseSpotify():
+    speak("closing spotify")
+    os.system('TASKKILL /F /IM "Spotify.exe"')
+
+def StartNetflix():
+    operapath ='C:/Users/sergi/AppData/Local/Programs/Opera GX/launcher.exe %s'
+    speak("starting Netflix")
+
+    wb.get(operapath).open_new_tab('netflix.com')
+
+def StartBrowser():
+    operapath ='C:/Users/sergi/AppData/Local/Programs/Opera GX/launcher.exe %s'
+    speak("starting web browser")
+    wb.get(operapath).open_new_tab('google.com')
+
+def OpenWebSite():
+    speak("What should i look for sir ?")
+    operapath ='C:/Users/sergi/AppData/Local/Programs/Opera GX/launcher.exe %s'
+    search =takeCommand()
+    speak("opening"+search)
+    wb.get(operapath).open_new_tab(search+'.com')
+
+
+def GoOffline():
+    speak("going offline, have a nice"+TimeOfDay())
+    quit()
+
+def jokes():
+    speak(pyjokes.get_joke())
+
+def WordsIKNOW():
+    speak(commands)
+
+def closeApp():
+    print(123)
+
+#find path of file
+def findFile(filename):
+    newFileName=filename+'.exe'
+    for root,dirs, files in os.walk(pathc):
+        for f in files:
+            if newFileName in os.path.join(root,f).lower() and "install" not in os.path.join(root,f).lower():
+                return os.path.join(root,f)
+    for root,dirs, files in os.walk(pathd):
+        for f in files:
+            if newFileName in os.path.join(root,f).lower() and "install" not in os.path.join(root,f).lower():
+                return os.path.join(root,f)
+    return None
+
+def openApp():
+    speak("waht app  would you like me to open?")
+    appName=takeCommand().lower()
+    speak("opening"+appName)
+    #if app was searched befor
+    if appName in PathList:
+        os.startfile(PathList[appName])
+        #check the counter 
+        with open ("wordsSoFarNew.json","w") as addnewWord:
+            #if ward was said enought tine we want to add it as a "basic" command
+            if ConterCheck[appName]==5:
+                #delete the counter cuse we wount need it
+                    del AppCounter[appName] 
+                    newcommand="open "+appName  #creating new commad for speaking
+                    newCommandFunc="openKnownApps()"# creating the func we want to link it to
+                    commands[newcommand]=newCommandFunc#creating the keay and value belonging
+                    json.dump(commands,addnewWord)
+                    speak("i have added the open "+appName+" command for your comfort")
+                    with open("potentialApps.json","w") as addpoten:
+                        Potenred[newCommandFunc]=appName#adding the new app start link
+                        json.dump(Potenred,addpoten)
+                    
+            else:
+                with open ("PathCounter.json",'w') as counteZeset:
+                    AppCounter[appName]+=1 # counting 
+                    json.dump(AppCounter,counteZeset)
+            if "lastApp" in newWordsforapp:
+                    addToNewwordsforApps(PathList[appName])
+    else:
+        foundpath=findFile(appName)#first time finding prath
+        if foundpath == None:
+            speak("app was not found , would you like to try diffrent name? ")
+            print("Y/N")
+            question=takeCommand().lower()
+            if question == "yes":
+                with open("NewwordsforApps.json","w") as addNewwrdforapp:
+                    newWordsforapp["lastApp"]=appName
+                    json.dump(newWordsforapp,addNewwrdforapp)
+                openApp()
+                exit()
+            else:
+                exit()
+        os.startfile(foundpath)
+        if "lastApp" in newWordsforapp:
+            addToNewwordsforApps(foundpath)
+
+        with open (PathCounter.json",'w') as counteZeeset:
+            AppCounter[appName]=0#starting a new counter with 0
+           # if "lastApp" in newWordsforapp:
+                #AppCounter[newWordsforapp["lastApp"]]=0
+            json.dump(AppCounter,counteZeeset)
+            
+        with open("executablePath.json","w") as addPath:
+            PathList[appName]=foundpath# adding the app path for future faster lookup
+            #if"lastApp" in newWordsforapp:
+                #PathList[newWordsforapp["lastApp"]]=foundpath
+            json.dump(PathList,addPath)
+    #del newWordsforapp["lastApp"]
+        
+def addToNewwordsforApps(PATH):
+    with open ("PathCounter.json",'w') as counteZeeset:
+        AppCounter[newWordsforapp["lastApp"]]=0
+        json.dump(AppCounter,counteZeeset)
+    with open("executablePath.json","w") as addPath:
+        PathList[newWordsforapp["lastApp"]]=PATH
+        json.dump(PathList,addPath)
+    del newWordsforapp["lastApp"]
+
+
+
+
+
+
+def openKnownApps():
+    filename=query.replace("open ","")# deleting the world "open" so we will ahve only the app name
+    speak("opening"+filename)
+    os.startfile(PathList[filename])
+
+
+
+
+if __name__ == "__main__":
+    #wishme()
+
+    #open the command the AI already knows
+    with open("wordsSoFarNew.json") as fd:
+        commands=json.load(fd)
+    #open file with the new words 
+    with open("NewWords.json","r") as Nwrd:
+        Newwrds=json.load(Nwrd)
+    # open file with the words that might be connected to func
+    with open("\ListOfFunc.json") as LSTfunc:
+        funcList=json.load(LSTfunc)
+    #open file with the known paths
+    with open("executablePath.json") as Pathlist:
+        PathList=json.load(Pathlist)
+    with open ("PathCounter.json","r") as acounter:
+        AppCounter=json.load(acounter)
+    #counter of opened apps as Read
+    with open ("PathCounter.json") as counterC:
+        ConterCheck=json.load(counterC)
+    #open apps for shortcuts
+    with open("potentialApps.json") as potentialre:
+        Potenred=json.load(potentialre)
+    with open("NewwordsforApps.json")as newWrdforapp:
+        newWordsforapp=json.load(newWrdforapp)
+    
+    
+    prevQuery="None"
+
+
+
+
+    while True:
+        #take command from user
+        query = takeCommand().lower()
+ 
+        #if the command is in the known commands
+        if query in commands.keys():
+            #run the cfunc
+            func=commands[query]
+            #if we have a potential world we will conect it to some func
+            if  prevQuery not in commands.keys() and prevQuery not in funcList.keys() and prevQuery != "None":
+                funcList[prevQuery]=commands[query]
+                #after adding the key to the value we will add to the json file
+                with open("ListOfFunc.json","w") as addLSTfunc:
+                    json.dump(funcList,addLSTfunc)
+            #run the fun from the json wordsSoFar
+
+            else:
+                prevQuery="None" 
+            eval(func)
+
+        else :
+            #unknow word
+            with open("NewWords.json","w") as adw:
+                #if never heard it befor we will add to the counting file (newowrds)
+                if query not in Newwrds.keys():
+                    Newwrds[query]=1
+                    json.dump(Newwrds,adw)
+                #we heard the word enougth so we want to add it to the words the AI knows
+                elif  Newwrds[query]==10:
+                    with open ("wordsSoFarNew.json","w") as addnewWord:
+                        commands[query]=funcList[query]
+                        json.dump(commands,addnewWord)
+                #we heard the word one more time so we want to count that
+                elif query in Newwrds.keys():
+                    Newwrds[query]+=1
+                    json.dump(Newwrds,adw)
+                #remmember the previus command for might future use
+                prevQuery = query
+       
+
+
