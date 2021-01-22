@@ -1,0 +1,15 @@
+{
+	"go offline": "GoOffline()",
+	"what time is it": "Time()",
+	"tell me a joke": "jokes()",
+	"open college portal": "HIT()",
+	"open music": "OpenSpotify()",
+	"close music": "CloseSpotify()",
+	"start netflix": "StartNetflix()",
+	"open browser": "StartBrowser()",
+	"open website": "OpenWebSite()",
+	"what is the date": "date()",
+	"what words you know": "WordsIKNOW()",
+	"open app": "openApp()",
+	"open spotify": "openKnownApps()",
+	"close App": "closeApp()"}
