@@ -9,8 +9,7 @@ import pyjokes
 import json
 
 # Initialize the engine 
-pathc = "C:\\"
-pathd="D:\\"
+
 list_of_monts=[ "january","february","march ","april","may","june","july","august","september","october","november","december"]
 engine =pyttsx3.init()
 #change volume
